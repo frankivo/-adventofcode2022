@@ -2,45 +2,69 @@
 # https://adventofcode.com/2023/day/10
 
 from data import data
-from typing import Tuple
-import sys
 
 
 def part1(data: data) -> None:
-    maze = dict(parse(data))
-    start = [i for i, k in maze.items() if k == "S"][0]
+    maze, visited, todo = {}, set(), set()
+    for x, line in enumerate(data.getlines()):
+        for y, char in enumerate(line):
+            adj = []
+            if char in "-J7S":
+                adj.append((x, y - 1))
+            if char in "-FLS":
+                adj.append((x, y + 1))
+            if char in "|F7S":
+                adj.append((x + 1, y))
+            if char in "|LJS":
+                adj.append((x - 1, y))
+            if char == "S":
+                visited.add((x, y))
+                todo.add((x, y))
+            maze[(x, y)] = adj
 
-    def walk(current: Tuple[int, int], visited: dict = {}, dist: int = 0) -> int:
-        visited.update({current: dist})
+    print(maze[(1, 1)])
 
-        options = []
-
-        for a in adj(maze, current):
-            if a not in visited or visited.get(a) > dist:
-                options.append(walk(a, visited, dist + 1))
-        return min(options) if options else dist
-
-    print(walk(start))
-
-
-def parse(data: data) -> iter:
-    for y, line in enumerate(data.getlines()):
-        for x, char in enumerate(line):
-            yield (x, y), char
+    steps = -1
+    while todo:
+        next = set()
+        for x1, y1 in todo:
+            for x2, y2 in maze[(x1, y1)]:
+                if (x2, y2) not in visited and (x1, y1) in maze.get((x2, y2), []):
+                    next.add((x2, y2))
+                    visited.add((x2, y2))
+        todo = next
+        steps += 1
+    print(steps)
 
 
-def adj(maze: dict, source: Tuple[int, int]) -> iter:
-    x, y = source
+# def part1(data: data) -> None:
+#     grid = data.getlines()
+#     graph = {}
+#     for x, line in enumerate(grid):
+#         for y, tile in enumerate(line):
+#             adjacent = []
+#             if tile in "-J7S":
+#                 adjacent.append((x, y - 1))
+#             if tile in "-FLS":
+#                 adjacent.append((x, y + 1))
+#             if tile in "|F7S":
+#                 adjacent.append((x + 1, y))
+#             if tile in "|LJS":
+#                 adjacent.append((x - 1, y))
+#             if tile == "S":
+#                 visited = set([(x, y)])
+#                 q = set([(x, y)])
+#             graph[(x, y)] = adjacent
 
-    # Above
-    if maze.get((x, y - 1), "") in "|7F":
-        yield (x, y - 1)
-    # Below
-    if maze.get((x, y + 1), "") in "|LJ":
-        yield (x, y + 1)
-    # Left
-    if maze.get((x - 1, y), "") in "-LF":
-        yield (x - 1, y)
-    # Right
-    if maze.get((x + 1, y), "") in "-J7":
-        yield (x + 1, y)
+#     steps = -1
+#     while q:
+#         nxt = set()
+#         for x1, y1 in q:
+#             for x2, y2 in graph[(x1, y1)]:
+#                 if (x2, y2) not in visited and (x1, y1) in graph.get((x2, y2), []):
+#                     nxt.add((x2, y2))
+#                     visited.add((x2, y2))
+#         q = nxt
+#         steps += 1
+
+#     print(steps)
