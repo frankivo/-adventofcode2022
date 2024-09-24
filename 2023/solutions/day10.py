@@ -8,8 +8,17 @@ from typing import Tuple
 def part1(data: data) -> None:
     maze = dict(parse(data))
     start = [i for i, k in maze.items() if k == "S"][0]
-    print(start)
-    print(list(adj(maze, start)))
+
+    def walk(current: Tuple[int, int], visited: list = [], dist: int = 0) -> int:
+        visited.append(current)
+
+        options = []
+
+        for a in [a for a in adj(maze, current) if a not in visited]:
+            options.append(walk(a, visited, dist + 1))
+        return max(options) if options else dist
+
+    print(walk(start))
 
 
 def parse(data: data) -> iter:
